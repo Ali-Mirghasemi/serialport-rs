@@ -27,6 +27,21 @@ fn main() {
                                 .as_ref()
                                 .map_or("".to_string(), |x| format!("{:02x}", *x))
                         );
+                        #[cfg(feature = "usbportinfo-address")]
+                        {
+                            println!(
+                                "        Bus Number: {}",
+                                info.bus_number
+                                    .as_ref()
+                                    .map_or("".to_string(), |x| format!("{:02x}", *x))
+                            );
+                            println!(
+                                "        Address: {}",
+                                info.address
+                                    .as_ref()
+                                    .map_or("".to_string(), |x| format!("{:02x}", *x))
+                            );
+                        }
                         println!(
                             "        Serial Number: {}",
                             info.serial_number.as_ref().map_or("", String::as_str)

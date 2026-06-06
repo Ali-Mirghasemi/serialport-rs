@@ -830,6 +830,10 @@ pub struct UsbPortInfo {
     /// interface (as is the case on macOS), so you should recognize both interface numbers.
     #[cfg(feature = "usbportinfo-interface")]
     pub interface: Option<u8>,
+    #[cfg(feature = "usbportinfo-address")]
+    pub bus_number: Option<u8>,
+    #[cfg(feature = "usbportinfo-address")]
+    pub address: Option<u8>,
 }
 
 struct HexU16(u16);
@@ -852,6 +856,11 @@ impl std::fmt::Debug for UsbPortInfo {
         #[cfg(feature = "usbportinfo-interface")]
         {
             d.field("interface", &self.interface);
+        }
+        #[cfg(feature = "usbportinfo-address")]
+        {
+            d.field("bus_number", &self.bus_number);
+            d.field("address", &self.address);
         }
 
         d.finish()
@@ -979,15 +988,23 @@ mod test {
             serial_number: Some(String::from("your serial_number here")),
             #[cfg(feature = "usbportinfo-interface")]
             interface: Some(42),
+            #[cfg(feature = "usbportinfo-address")]
+            bus_number: Some(1),
+            #[cfg(feature = "usbportinfo-address")]
+            address: Some(4),
         };
         let formatted = format!("{:?}", info);
 
         // Set the expectiation for the debug representation basend on a "snapshot" of the current
         // one, manually cross-checked to contain a VID and PID in hexadecimal digits.
-        #[cfg(not(feature = "usbportinfo-interface"))]
+        #[cfg(all(not(feature = "usbportinfo-interface"), not(feature = "usbportinfo-address")))]
         let expected = "UsbPortInfo { vid: 0xbade, pid: 0xaffe, serial_number: Some(\"your serial_number here\"), manufacturer: Some(\"your manufacutrer here\"), product: Some(\"your product here\") }";
-        #[cfg(feature = "usbportinfo-interface")]
+        #[cfg(all(feature = "usbportinfo-interface", not(feature = "usbportinfo-address")))]
         let expected = "UsbPortInfo { vid: 0xbade, pid: 0xaffe, serial_number: Some(\"your serial_number here\"), manufacturer: Some(\"your manufacutrer here\"), product: Some(\"your product here\"), interface: Some(42) }";
+        #[cfg(all(not(feature = "usbportinfo-interface"), feature = "usbportinfo-address"))]
+        let expected = "UsbPortInfo { vid: 0xbade, pid: 0xaffe, serial_number: Some(\"your serial_number here\"), manufacturer: Some(\"your manufacutrer here\"), product: Some(\"your product here\"), bus_number: Some(1), address: Some(4) }";
+        #[cfg(all(feature = "usbportinfo-interface", feature = "usbportinfo-address"))]
+        let expected = "UsbPortInfo { vid: 0xbade, pid: 0xaffe, serial_number: Some(\"your serial_number here\"), manufacturer: Some(\"your manufacutrer here\"), product: Some(\"your product here\"), interface: Some(42), bus_number: Some(1), address: Some(4) }";
 
         assert_eq!(formatted, expected);
     }

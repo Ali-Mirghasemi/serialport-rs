@@ -187,6 +187,10 @@ fn parse_usb_port_info(hardware_id: &str, parent_hardware_id: Option<&str>) -> O
 
         #[cfg(feature = "usbportinfo-interface")]
         interface,
+        #[cfg(feature = "usbportinfo-address")]
+        bus_number : None,
+        #[cfg(feature = "usbportinfo-address")]
+        address : None,
     })
 }
 
@@ -394,6 +398,13 @@ impl PortDevice {
             .map(|mut info: UsbPortInfo| {
                 info.manufacturer = self.property(SPDRP_MFG);
                 info.product = self.property(SPDRP_FRIENDLYNAME);
+                #[cfg(feature = "usbportinfo-address")]
+                {
+                    use windows_sys::Win32::Devices::DeviceAndDriverInstallation::{SPDRP_ADDRESS, SPDRP_BUSNUMBER};
+
+                    info.bus_number = self.property(SPDRP_BUSNUMBER);
+                    info.address = self.property(SPDRP_ADDRESS);
+                }
                 SerialPortType::UsbPort(info)
             })
             .unwrap_or(SerialPortType::Unknown)
